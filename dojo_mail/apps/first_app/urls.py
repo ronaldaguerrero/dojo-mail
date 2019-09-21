@@ -10,4 +10,9 @@ urlpatterns = [
     url(r'^logout$', views.logout),
     url(r'^send_email$', views.send_email),
     url(r'^view_emails$', views.view_emails),
+    url(r'^view_email/(?P<value>\d+)$', views.view_email),
+    url(r'^reply/(?P<value>\d+)$', views.reply),
+    url(r'^delete/(?P<value>\d+)$', views.delete),
+    url(r'^search$', views.search),
+    url(r'^message_fwd$', views.message_fwd),
 ]

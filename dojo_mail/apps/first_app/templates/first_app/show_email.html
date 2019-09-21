@@ -7,7 +7,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
-    <title>Inbox</title>
+    <title>Show Email</title>
   </head>
   <body>
     <!-- Optional JavaScript -->
@@ -16,27 +16,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
    <a href="/logout">Log Out</a>
-    <form action="/search" method="POST">
-    {% csrf_token %}
-     <p>Search:</p><input type="text" name="query">
-     <button>Search</button>
-   </form>
+   <h1>Success!! Welcome {{ user.first_name }} {{ user.last_name }}!</h1>
+   <p>Search: [[ need to add search functionality ]]</p>
    <br>
-    <p>(unread : total)</p>
-    <p>inbox count  : {{ unread_count }} : {{ inbox_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
-
-    {% for e in emails %}
-    {# Each "email" is a Contact model object. #}
-      <p>Email ID: <a href="/view_email/{{ e.id }}">{{ e.id }}</a></p>
-      <p>Received on: {{ e.created_at }}</p>
-      <p>From: {{ e.from_email }}</p>
-      <p>Subject: {{ e.subject }}</p>
-      <p>Message: {{ e.message }}</p>
-    {% endfor %}  
-
-   
-
+    <p>email view: from | received | subject | message</p>
+    <p>From: {{ view_email.from_email }}</p>
+    <p>Received on: {{ view_email.to_email }}</p>
+    <p>From: {{ view_email.subject }}</p>
+    <p>Subject: {{ view_email.message }}</p>
+    <p>Message: {{ e.message }}</p>
+    <a href="/reply/{{view_email.id}}">Reply</a>
+    <a href="/delete/{{view_email.id}}">Delete</a>
+           
+   <p>inbox count (unread : total) : {{ unread_count }}:{{ inbox_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
    </body>
 </html>
-
-

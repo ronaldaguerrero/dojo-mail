@@ -15,20 +15,49 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-   <a href="logout">Log Out</a>
+   <a href="/logout">Log Out</a><br>
+   <a href="/search">Search</a>
+
    <h1>Success!! Welcome {{ user.first_name }} {{ user.last_name }}!</h1>
    <p>Search: [[ need to add search functionality ]]</p>
+   
+   {% if checked == True %}
+   <form action="/message_fwd" method="POST" id="client">
+    {% csrf_token %}
+    <input id='false-checkbox' type='hidden' value='0' name='message_fwd'>
+     Message Forwarding: <input type="checkbox" name="message_fwd" id="message_fwd" value="1" checked ><br>
+     Forwarding Email: <input type="email" name="fwd_email" id="fwd_email" value={{ fwd_email }}><br>
+     <button>Submit</button>
+   </form>
+   {% else %}
+   <form action="/message_fwd" method="POST">
+    {% csrf_token %}
+    <input id='false-checkbox' type='hidden' value='0' name='message_fwd'>
+     Message Forwarding: <input type="checkbox" name="message_fwd" id="message_fwd" value="1"><br>
+     Forwarding Email: <input type="email" name="fwd_email" id="fwd_email"><br>
+     <button>Submit</button>
+   </form>
+   {% endif %}
+   
    <br>
-   <form action ="/send_email" method="POST">
+   <form action="/send_email" method="POST">
      {% csrf_token %}
-     <p>Send To: </p>
-     <input type="email" name="to-email">
-     <p>Subject: </p>
+     <p>Send To: {{ email }}</p>
+     <input type="text" name="to-email">
+     <p>Subject: {% if email.subject != None %}
+     RE: {{ email.subject }}</p>
+     {% endif %}
      <input type="text" name="subject">
-     <p>Message:</p><textarea name="message"></textarea>
+     <p>Message:</p><textarea name="message">
+       {% if email.subject != None %}
+       email.message
+       {% endif %}
+     </textarea>
      <button>Send Email</button>
    </form>
 
    <a href="/view_emails">all emails</a>
    </body>
+ 
+    
 </html>
