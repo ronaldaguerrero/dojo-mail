@@ -6,21 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
     <title>Show Email</title>
   </head>
   <body>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-   <a href="/home">Home</a><br>
-   <a href="/logout">Log Out</a>
+    <a href="/home">Home</a><br>
+    <a href="/logout">Log Out</a>
    
-   <h1>Success!! Welcome {{ user.first_name }} {{ user.last_name }}!</h1>
-   <p>Search: [[ need to add search functionality ]]</p>
-   <br>
+    <h1>Success!! Welcome {{ user.first_name }} {{ user.last_name }}!</h1>
+    <br>
     <p>email view: from | received | subject | message</p>
     <p>From: {{ view_email.from_email }}</p>
     <p>Received on: {{ view_email.to_email }}</p>
@@ -31,6 +24,11 @@
     <a href="/reply/{{view_email.id}}">Reply</a>
     <a href="/delete/{{view_email.id}}">Delete</a>
            
-   <p>inbox count (unread : total) : {{ unread_count }}:{{ inbox_count }} spam count: {{ spam_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
+    <p>inbox count (unread : total) : {{ unread_count }}:{{ inbox_count }} spam count: {{ spam_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
    </body>
 </html>

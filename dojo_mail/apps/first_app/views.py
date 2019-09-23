@@ -75,6 +75,9 @@ def home(request):
 	}
 	return render(request, 'first_app/home.html', context)
 
+def compose(request):
+	return render(request, 'first_app/compose.html')
+
 def logout(request):
 	request.session['user_id'] = None
 	request.session['user_email'] = None
@@ -194,6 +197,14 @@ def delete(request, value):
 	return redirect('/view_emails')
 
 def message_fwd(request):
+	errors = {}
+	try:
+		user = User.objects.get(email = request.POST['fwd_email']) 
+	except User.DoesNotExist:
+		errors["to-email"] = "'Forwarding Email' does not exist"
+		for key, value in errors.items():
+			messages.error(request,value)
+		return redirect('/home')
 	if request.POST['message_fwd'] == "1":
 		this_user = User.objects.get(pk=request.session['user_id'])		
 		this_user.message_forwarding = True
@@ -223,16 +234,15 @@ def search(request):
 	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
-	# if request.session['query'] is None:
-	# 	request.session['query'] = request.POST['query']
-
-	# if request.session['query'] is not None:
 
 	all_results = Email.objects.filter(message__icontains=request.POST['query']).filter(to_email=request.session['user_email'])
 	
-	paginator = Paginator(all_results, 2) # set pagintation to 2
-	page = request.GET.get('page')
-	results = paginator.get_page(page)
+	if len(all_results) == 0:
+		results = "No Results"
+	else:	
+		paginator = Paginator(all_results, 2) # set pagintation to 2
+		page = request.GET.get('page')
+		results = paginator.get_page(page)
 
 	context = {
 		'results': results,

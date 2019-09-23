@@ -4,18 +4,42 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
+    <!-- Bootstrap CSS -->
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
+    <style>
+    .div1, .div2{
+        border-style: solid;
+        border-width: 5px;
+        width: 20%;
+        display: inline-block;
+        padding: 25px;
+        margin-left: 10px;
+    }
+    .div2{
+        position: fixed;
+    }
+    .top{
+        margin-left:40%;
+    }
+    .r{
+        position: fixed;
+        left: 160px;
+    }
+    .l{
+        position: fixed;
+        left: 560px;
+    }
+    #rb{
+        margin-left: 64%;
+    }
+    #lb{
+        margin-left: 72%;
+    }
+    </style>
     <title>Login & Registration</title>
   </head>
   <body>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -23,23 +47,32 @@
         {% endfor %}
     </ul>
     {% endif %}
-    <p>Registration Form</p>
+    <div class='div1'>
+    <p class='top'>Register</p>
     <form action="/users" method="POST">
         {% csrf_token %}
-        <p>First name: <input type="text" name="first_name"></p>
-        <p>Last name: <input type="text" name="last_name"></p>
-        <p>Email: <input type="email" name="email"></p>
-        <p>Password: <input type="password" name="password"></p>
-        <p>Confirm Password: <input type="password" name="confirm_password"></p>
-        <input type="submit">
+        <p>First name <input class='r' type="text" name="first_name"></p>
+        <p>Last name <input class='r' type="text" name="last_name"></p>
+        <p>Email <input  class='r' type="email" name="email"></p>
+        <p>Password <input class='r'type="password" name="password"></p>
+        <p>Confirm pw<input class='r' type="password" name="confirm_password"></p>
+        <button id='rb'type="submit" class="btn btn-light">Register</button>
     </form>
-
-    <p>Login Form</p>
+    </div>
+    <div class='div2'>
+    <p class='top'>Login</p>
     <form action="/login" method="POST">
         {% csrf_token %}
-        <p>Email: <input type="email" name="email"></p>
-        <p>Password: <input type="password" name="password"></p>
-        <input type="submit">
+        <p>Email <input class='l' type="email" name="email"></p>
+        <p>Password <input class='l'type="password" name="password"></p>
+        <button id='lb'type="submit" class="btn btn-light">Login</button>
     </form>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
   </body>
+    
 </html>

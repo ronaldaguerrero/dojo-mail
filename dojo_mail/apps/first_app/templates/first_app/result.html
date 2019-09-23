@@ -6,29 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
     <title>Inbox</title>
   </head>
   <body>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-   <a href="/home">Home</a><br>
-   <a href="/logout">Log Out</a>
-  
-   <br>
+  <a href="/home">Home</a><br>
+  <a href="/logout">Log Out</a>
+  <form action="/search" method="POST">
+    {% csrf_token %}
+    <p>Search:</p><input type="text" name="query">
+    <button>Search</button>
+  </form>
+  <br>
    
-   <h1>Search Page</h1>
-   {% for e in results %}
-    {# Each "email" is a Contact model object. #}
+  <h1>Search Page</h1>
+  {% if results %}
+    <h3>{{ results }}</h3>
+  {% else %}
+    {% for e in results %}
+      {# Each "email" is a Contact model object. #}
       <p>Email ID: <a href="/view_email/{{ e.id }}">{{ e.id }}</a></p>
       <p>Received on: {{ e.created_at }}</p>
       <p>From: {{ e.from_email }}</p>
       <p>Subject: {{ e.subject }}</p>
       <p>Message: {{ e.message }}</p>
     {% endfor %}  
+  {% endif %}
 
     <!-- <div class="pagination">
       <span class="step-links">
@@ -48,8 +50,12 @@
       </span>
     </div> -->
 
-    
     <p>(unread : total)</p>
     <p>inbox count  : {{ unread_count }} : {{ inbox_count }} | spam count: {{ spam_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
    </body>
 </html>
