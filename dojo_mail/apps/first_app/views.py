@@ -47,9 +47,7 @@ def register_user(request):
 		new_user = User.objects.create(first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], password=password_hash)
 		request.session['user_email'] = request.POST['email']
 		request.session['user_id'] = User.objects.last().id
-		print('='*50)
-		print('created a new user', new_user.__dict__)
-		return redirect('/success')
+		return redirect('/home')
 
 def login(request):
 	users_with_email = User.objects.filter(email=request.POST['email'])
@@ -60,7 +58,7 @@ def login(request):
 		if (check == True):
 			request.session['user_id'] = users_with_email[0].id
 			request.session['user_email'] = request.POST['email']
-			return redirect('/success')
+			return redirect('/home')
 		else:
 			messages.error(request, "Invalid Login Info")
 			return redirect('/register')
@@ -68,16 +66,14 @@ def login(request):
 		messages.error(request, "Invalid Login Info")
 		return redirect('/register')
 
-def success(request):
+def home(request):
 	user = User.objects.get(id=request.session['user_id'])
-	print('from success')
-	print(user.message_forwarding)
 	context = {
 		'user': user,
 		'checked': user.message_forwarding,
 		'fwd_email': user.forward_to_email
 	}
-	return render(request, 'first_app/success.html', context)
+	return render(request, 'first_app/home.html', context)
 
 def logout(request):
 	request.session['user_id'] = None
@@ -86,56 +82,75 @@ def logout(request):
 	return redirect('/register')
 
 def send_email(request):
-	# loop through list
-	# print(request.POST['to-email'])
-	# # get loop to work, currently its parsing out email to individual characters
-	# for to_email in request.POST['to-email']:
-	# 	print('hello from send email')
-	# 	# to_email out put is the first letter
-	# 	print(to_email)
-	# 	this_user = User.objects.get(id=request.session['user_id'])
-	# 	# loop through all users to all users in list
-	# 	# check if 'to email' has activated fwd
-	# 	to_user = User.objects.get(email = to_email)
-	# 	if to_user.message_forwarding == True and to_user not in request.POST['to-email']:
-	# 		# if fwd email address is not in list, add to list
-	# 		email_list.append(to_user.forward_to_email)
-	# 	else: 
-	# 		# send email
-	# 		e = Email(subject = request.POST['subject'], message=request.POST['message'], from_email=request.session['user_email'], to_email=to_email, user=this_user)
-	# 		e.save()
-	# 		return redirect('/success', context=[])
-	# working code:
-	this_user = User.objects.get(id=request.session['user_id'])
-	e = Email(subject = request.POST['subject'], message=request.POST['message'], from_email=request.session['user_email'], to_email=request.POST['to-email'], user=this_user)
-	e.save()
-	to_user = User.objects.get(email = request.POST['to-email'])
-	if to_user.message_forwarding == True:
-		forward_e = Email(subject = request.POST['subject'], message=request.POST['message'], from_email=request.session['user_email'], to_email=to_user.forward_to_email, user=this_user)
-		forward_e.save()
-		return redirect('/success', context=[])
-	else: 
-		return redirect('/success', context=[])
+	errors = emailvalidator(request.POST)
+	if len(errors) != 0:
+		for key, value in errors.items():
+			messages.error(request,value)
+			print(errors)
+		return redirect('/home')
+	else:
+		# loop through list
+		emails = request.POST['to-email']
+		email_contents = emails.split(',')
+		# loop through all users to all users in list
+		for to_email in email_contents:
+			to_email = to_email.strip()
+			this_user = User.objects.get(id=request.session['user_id'])
+			# check if 'to email' has activated fwd
+			to_user = User.objects.get(email = to_email)
+			if to_user.message_forwarding == True and to_user not in email_contents:
+				# if fwd email address is not in list, add to list
+				email_contents.append(to_user.forward_to_email)
+			# check if to user has spam values
+			if len(to_user.spam) > 0:
+				spam_contents = to_user.spam.split(',')
+				for spam in spam_contents:
+					print(spam)
+					if this_user.email == spam:
+						e.spam = True
+						e.save()
+			# send email
+			e = Email(subject = request.POST['subject'], message=request.POST['message'], from_email=request.session['user_email'], to_email=to_email, user=this_user)
+			e.save()
+		return redirect('/home', context=[])
+
+def emailvalidator(postData):
+	errors = {}
+	emails = postData['to-email']
+	email_contents = emails.split(',')
+	# loop through all users to all users in list
+	for to_email in email_contents:
+		try:
+			user = User.objects.get(email = to_email) 
+		except User.DoesNotExist:
+			errors["to-email"] = "'To email' does not exist"
+			return errors
+	if len(postData['message']) < 1:
+		errors["message"] = "Message should be at least 2 characters"
+	return errors
 
 def reply(request, value):
 	email = Email.objects.get(pk=value)
-	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).count()
-	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).count()
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
-	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
+	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()	
 	context = {
 		'email': email,
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
+		'spam_count': spam_count,
 		'sent_count' : sent_count,
 		'deleted_count' : deleted_count
 	}
 	return render(request, 'first_app/reply.html', context)
 
 def view_emails(request):
-	view_emails = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=False)
-	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).count()
-	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).count()
+	view_emails = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=False).filter(spam=False).order_by('id')
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	
@@ -147,6 +162,7 @@ def view_emails(request):
 		'emails' : emails, 
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
+		'spam_count': spam_count,
 		'sent_count' : sent_count,
 		'deleted_count' : deleted_count
 	}
@@ -156,14 +172,16 @@ def view_email(request, value):
 	view_email = Email.objects.get(pk=value)
 	view_email.read = True
 	view_email.save()
-	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).count()
-	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).count()
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	context = {
 		'view_email': view_email,
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
+		'spam_count': spam_count,
 		'sent_count' : sent_count,
 		'deleted_count' : deleted_count
 	}
@@ -174,15 +192,6 @@ def delete(request, value):
 	email.deleted = True;
 	email.save()
 	return redirect('/view_emails')
-
-def search(request, value):
-	context = {
-		'unread_count': unread_count,
-		'inbox_count': inbox_count,
-		'sent_count' : sent_count,
-		'deleted_count' : deleted_count
-	}
-	return render(request, 'first_app/show_result.html', context)
 
 def message_fwd(request):
 	if request.POST['message_fwd'] == "1":
@@ -195,15 +204,23 @@ def message_fwd(request):
 		this_user.message_forwarding = False
 		this_user.forward_to_email = ""
 		this_user.save()
-	return redirect('/success')
+	return redirect('/home')
 
-def spam(request):
-
+def spam(request, value):
+	this_user = User.objects.get(pk=request.session['user_id'])
+	spam_user = Email.objects.get(pk=value).from_email
+	spam_email = Email.objects.get(pk=value)
+	spam_email.spam = True
+	spam_email.save()
+	if spam_user not in this_user.spam:
+		this_user.spam += spam_user + ","
+		this_user.save()
 	return redirect('/view_emails')
 
 def search(request):
-	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).count()
-	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).count()
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	# if request.session['query'] is None:
@@ -211,7 +228,7 @@ def search(request):
 
 	# if request.session['query'] is not None:
 
-	all_results = Email.objects.filter(message__icontains=request.POST['query'])
+	all_results = Email.objects.filter(message__icontains=request.POST['query']).filter(to_email=request.session['user_email'])
 	
 	paginator = Paginator(all_results, 2) # set pagintation to 2
 	page = request.GET.get('page')
@@ -221,6 +238,7 @@ def search(request):
 		'results': results,
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
+		'spam_count': spam_count,
 		'sent_count' : sent_count,
 		'deleted_count' : deleted_count
 	}

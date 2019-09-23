@@ -15,6 +15,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+   <a href="/home">Home</a><br>
    <a href="/logout">Log Out</a>
     <form action="/search" method="POST">
     {% csrf_token %}
@@ -23,7 +24,7 @@
    </form>
    <br>
     <p>(unread : total)</p>
-    <p>inbox count  : {{ unread_count }} : {{ inbox_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
+    <p>inbox count  : {{ unread_count }} : {{ inbox_count }} spam count: {{ spam_count }} | sent count: {{ sent_count }} | trash count: {{ deleted_count }}</p>
 
     {% for e in emails %}
     {# Each "email" is a Contact model object. #}
@@ -34,7 +35,23 @@
       <p>Message: {{ e.message }}</p>
     {% endfor %}  
 
-   
+   <div class="pagination">
+      <span class="step-links">
+          {% if emails.has_previous %}
+              <a href="?page=1">&laquo; first</a>
+              <a href="?page={{ emails.previous_page_number }}">previous</a>
+          {% endif %}
+
+          <span class="current">
+              Page {{ emails.number }} of {{ emails.paginator.num_pages }}.
+          </span>
+
+          {% if emails.has_next %}
+              <a href="?page={{ emails.next_page_number }}">next</a>
+              <a href="?page={{ emails.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+      </span>
+    </div>
 
    </body>
 </html>

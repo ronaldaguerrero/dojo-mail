@@ -11,9 +11,7 @@ class User(models.Model):
   password = models.CharField(max_length=255)
   message_forwarding = models.BooleanField(default=False)
   forward_to_email = models.CharField(max_length=255, blank=True)
-  # spam = models.ListCharField(
-  #       base_field=CharField(max_length=255)
-
+  spam = models.TextField(blank=True)
 
 class Email(models.Model):
   subject = models.CharField(max_length=255, blank=True, null=True)
@@ -25,30 +23,22 @@ class Email(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
   read = models.BooleanField(default=False)
+  spam = models.BooleanField(default=False)
   deleted = models.BooleanField(default=False)
   user = models.ForeignKey(User, related_name='emails', on_delete=models.PROTECT)
 
-# Validator example:
+# # Validator example:
 # # Create your models here.
-# class ShowManager(models.Manager):
+# class EmailManager(models.Manager):
 #   def validator(self, postData):
-#     d = dt.strptime(postData['rel_date'], "%Y-%m-%d")
-#     today = dt.now()
 #     errors = {}
-#     if len(postData['title']) < 2:
-#       errors["title"] = "Title should be at least 2 characters"
-#     if len(postData['net']) < 3:
-#       errors["network"] = "Network should be at least 3 characters"
-#     if len(postData['desc']) < 10:
-#       if len(postData['desc']) < 1:
-#         pass
-#       elif len(postData['desc']) < 10:
-#         errors["description"] = "Descrption should be at least 10 characters"
-#     if d > today:
-#       errors["release_date"] = 'Release date should be in the past'
-#     title = Show.objects.filter(title=postData['title'])
-#     if len(title) > 0:
-#       errors['title'] = 'Title is taken'
+#     to_email = User.objects.filter(email=postData['to-email'])
+#     print('hello from email validator')
+#     print(to_email)
+#     if len(postData['to-email']) < 1:
+#       errors["to-email"] = "'To email' must be present"
+#     if len(postData['message']) < 1:
+#         errors["description"] = "Message should be at least 2 characters"
 #     return errors
 
 # class Show(models.Model):

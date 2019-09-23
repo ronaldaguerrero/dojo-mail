@@ -6,7 +6,7 @@ urlpatterns = [
     url(r'^register$', views.register_form),
     url(r'^users$', views.register_user),
     url(r'^login$', views.login),
-    url(r'^success$', views.success),
+    url(r'^home$', views.home),
     url(r'^logout$', views.logout),
     url(r'^send_email$', views.send_email),
     url(r'^view_emails$', views.view_emails),
@@ -15,4 +15,5 @@ urlpatterns = [
     url(r'^delete/(?P<value>\d+)$', views.delete),
     url(r'^search$', views.search),
     url(r'^message_fwd$', views.message_fwd),
+    url(r'^spam/(?P<value>\d+)$', views.spam),
 ]

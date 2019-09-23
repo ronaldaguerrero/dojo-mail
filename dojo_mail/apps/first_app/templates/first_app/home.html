@@ -21,6 +21,14 @@
    <h1>Success!! Welcome {{ user.first_name }} {{ user.last_name }}!</h1>
    <p>Search: [[ need to add search functionality ]]</p>
    
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
    {% if checked == True %}
    <form action="/message_fwd" method="POST" id="client">
     {% csrf_token %}
