@@ -40,6 +40,7 @@
     <title>Login & Registration</title>
   </head>
   <body>
+    <h1>Create an Account</h1>
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -54,6 +55,7 @@
         <p>First name <input class='r' type="text" name="first_name"></p>
         <p>Last name <input class='r' type="text" name="last_name"></p>
         <p>Email <input  class='r' type="email" name="email"></p>
+        <p>Backup Email <input  class='r' type="email" name="backup-email"></p>
         <p>Password <input class='r'type="password" name="password"></p>
         <p>Confirm pw<input class='r' type="password" name="confirm_password"></p>
         <button id='rb'type="submit" class="btn btn-light">Register</button>

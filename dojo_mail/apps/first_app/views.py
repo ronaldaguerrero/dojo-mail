@@ -29,6 +29,8 @@ def register_user(request):
 		errors['email'] = "Email is taken"
 	if not EMAIL_REGEX.match(request.POST['email']):
 		errors['email'] = "Email is invalid format."
+	if not EMAIL_REGEX.match(request.POST['backup-email']):
+		errors['backup-email'] = "Backup Email is invalid format."
 	if len(request.POST['password'])< 8:
 		errors['password'] = "Password must be at least 8 characters long"
 	if request.POST['password'] != request.POST['confirm_password']:
@@ -44,10 +46,10 @@ def register_user(request):
 		# 2019-09: decoded
 		password_hash = hash1.decode('utf8')
 		# 3. Run the query to add the user to the db
-		new_user = User.objects.create(first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], password=password_hash)
+		new_user = User.objects.create(first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], backup_email=request.POST['backup-email'], password=password_hash)
 		request.session['user_email'] = request.POST['email']
 		request.session['user_id'] = User.objects.last().id
-		return redirect('/home')
+		return redirect('/compose')
 
 def login(request):
 	users_with_email = User.objects.filter(email=request.POST['email'])
@@ -58,7 +60,7 @@ def login(request):
 		if (check == True):
 			request.session['user_id'] = users_with_email[0].id
 			request.session['user_email'] = request.POST['email']
-			return redirect('/home')
+			return redirect('/compose')
 		else:
 			messages.error(request, "Invalid Login Info")
 			return redirect('/register')
@@ -66,17 +68,23 @@ def login(request):
 		messages.error(request, "Invalid Login Info")
 		return redirect('/register')
 
-def home(request):
+def compose(request):
 	user = User.objects.get(id=request.session['user_id'])
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
+	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
+	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	context = {
 		'user': user,
-		'checked': user.message_forwarding,
-		'fwd_email': user.forward_to_email
+		'view_email': view_email,
+		'unread_count': unread_count,
+		'inbox_count': inbox_count,
+		'spam_count': spam_count,
+		'sent_count' : sent_count,
+		'deleted_count' : deleted_count
 	}
-	return render(request, 'first_app/home.html', context)
-
-def compose(request):
-	return render(request, 'first_app/compose.html')
+	return render(request, 'first_app/compose.html', context)
 
 def logout(request):
 	request.session['user_id'] = None
@@ -90,7 +98,7 @@ def send_email(request):
 		for key, value in errors.items():
 			messages.error(request,value)
 			print(errors)
-		return redirect('/home')
+		return redirect('/view_emails')
 	else:
 		# loop through list
 		emails = request.POST['to-email']
@@ -115,7 +123,7 @@ def send_email(request):
 			# send email
 			e = Email(subject = request.POST['subject'], message=request.POST['message'], from_email=request.session['user_email'], to_email=to_email, user=this_user)
 			e.save()
-		return redirect('/home', context=[])
+		return redirect('/compose', context=[])
 
 def emailvalidator(postData):
 	errors = {}
@@ -133,6 +141,7 @@ def emailvalidator(postData):
 	return errors
 
 def reply(request, value):
+	user = User.objects.get(id=request.session['user_id'])
 	email = Email.objects.get(pk=value)
 	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
 	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
@@ -140,7 +149,8 @@ def reply(request, value):
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()	
 	context = {
-		'email': email,
+		'user': user,
+		'view_email': email,
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
 		'spam_count': spam_count,
@@ -150,6 +160,7 @@ def reply(request, value):
 	return render(request, 'first_app/reply.html', context)
 
 def view_emails(request):
+	user = User.objects.get(id=request.session['user_id'])
 	view_emails = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=False).filter(spam=False).order_by('id')
 	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
 	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
@@ -157,11 +168,12 @@ def view_emails(request):
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	
-	paginator = Paginator(view_emails, 2) # set pagintation to 2
+	paginator = Paginator(view_emails, 3) # set pagintation to 3
 	page = request.GET.get('page')
 	emails = paginator.get_page(page)
 	
 	context = {
+		'user': user,
 		'emails' : emails, 
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
@@ -171,7 +183,80 @@ def view_emails(request):
 	}
 	return render(request,'first_app/show.html', context)
 
+def sent_emails(request):
+	user = User.objects.get(id=request.session['user_id'])
+	sent_emails = Email.objects.all().filter(from_email=request.session['user_email']).filter(deleted=False).filter(spam=False).order_by('id')
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
+	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
+	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
+	
+	paginator = Paginator(sent_emails, 3) # set pagintation to 3
+	page = request.GET.get('page')
+	emails = paginator.get_page(page)
+	
+	context = {
+		'user': user,
+		'emails' : emails, 
+		'unread_count': unread_count,
+		'inbox_count': inbox_count,
+		'spam_count': spam_count,
+		'sent_count' : sent_count,
+		'deleted_count' : deleted_count
+	}
+	return render(request,'first_app/sent.html', context)
+
+def spam_emails(request):
+	user = User.objects.get(id=request.session['user_id'])
+	spam_emails = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=False).filter(spam=True).order_by('id')
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
+	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
+	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
+	
+	paginator = Paginator(spam_emails, 3) # set pagintation to 3
+	page = request.GET.get('page')
+	emails = paginator.get_page(page)
+	
+	context = {
+		'user': user,
+		'emails' : emails, 
+		'unread_count': unread_count,
+		'inbox_count': inbox_count,
+		'spam_count': spam_count,
+		'sent_count' : sent_count,
+		'deleted_count' : deleted_count
+	}
+	return render(request,'first_app/spam.html', context)
+
+def deleted_emails(request):
+	user = User.objects.get(id=request.session['user_id'])
+	deleted_emails = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).order_by('id')
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
+	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
+	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
+	
+	paginator = Paginator(deleted_emails, 3) # set pagintation to 3
+	page = request.GET.get('page')
+	emails = paginator.get_page(page)
+	
+	context = {
+		'user': user,
+		'emails' : emails, 
+		'unread_count': unread_count,
+		'inbox_count': inbox_count,
+		'spam_count': spam_count,
+		'sent_count' : sent_count,
+		'deleted_count' : deleted_count
+	}
+	return render(request,'first_app/spam.html', context)
+
 def view_email(request, value):
+	user = user = User.objects.get(id=request.session['user_id'])
 	view_email = Email.objects.get(pk=value)
 	view_email.read = True
 	view_email.save()
@@ -181,6 +266,7 @@ def view_email(request, value):
 	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
 	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	context = {
+		'user': user,
 		'view_email': view_email,
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,
@@ -196,6 +282,13 @@ def delete(request, value):
 	email.save()
 	return redirect('/view_emails')
 
+def fwd(request):
+	user = user = User.objects.get(id=request.session['user_id'])
+	context = {
+		'user': user,
+		}
+	return render(request,'first_app/fwd.html', context)
+
 def message_fwd(request):
 	errors = {}
 	try:
@@ -204,7 +297,7 @@ def message_fwd(request):
 		errors["to-email"] = "'Forwarding Email' does not exist"
 		for key, value in errors.items():
 			messages.error(request,value)
-		return redirect('/home')
+		return redirect('/compose')
 	if request.POST['message_fwd'] == "1":
 		this_user = User.objects.get(pk=request.session['user_id'])		
 		this_user.message_forwarding = True
@@ -215,7 +308,7 @@ def message_fwd(request):
 		this_user.message_forwarding = False
 		this_user.forward_to_email = ""
 		this_user.save()
-	return redirect('/home')
+	return redirect('/view_emails')
 
 def spam(request, value):
 	this_user = User.objects.get(pk=request.session['user_id'])
@@ -239,12 +332,13 @@ def search(request):
 	
 	if len(all_results) == 0:
 		results = "No Results"
+		show = False
 	else:	
-		paginator = Paginator(all_results, 2) # set pagintation to 2
-		page = request.GET.get('page')
-		results = paginator.get_page(page)
+		results = all_results
+		show = True
 
 	context = {
+		'show': show,
 		'results': results,
 		'unread_count': unread_count,
 		'inbox_count': inbox_count,

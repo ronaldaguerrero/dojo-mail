@@ -7,7 +7,7 @@ class User(models.Model):
   # username = models.CharField(max_length=45)
   # timezone = models.CharField(max_length=255, default = "PST Pacific Standard Time California UTC 08:00")
   email = models.CharField(max_length=255)
-  # backup_email = models.CharField(max_length=255)
+  backup_email = models.CharField(max_length=255, blank=True)
   password = models.CharField(max_length=255)
   message_forwarding = models.BooleanField(default=False)
   forward_to_email = models.CharField(max_length=255, blank=True)
