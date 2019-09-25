@@ -1,80 +1,181 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- Bootstrap CSS -->
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <style>
-    .div1, .div2{
-        border-style: solid;
-        border-width: 5px;
-        width: 20%;
-        display: inline-block;
-        padding: 25px;
-        margin-left: 10px;
-    }
-    .div2{
-        position: fixed;
-    }
-    .top{
-        margin-left:40%;
-    }
-    .r{
-        position: fixed;
-        left: 160px;
-    }
-    .l{
-        position: fixed;
-        left: 560px;
-    }
-    #rb{
-        margin-left: 64%;
-    }
-    #lb{
-        margin-left: 72%;
-    }
-    </style>
-    <title>Login & Registration</title>
-  </head>
-  <body>
-    <h1>Create an Account</h1>
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    <div class='div1'>
-    <p class='top'>Register</p>
-    <form action="/users" method="POST">
-        {% csrf_token %}
-        <p>First name <input class='r' type="text" name="first_name"></p>
-        <p>Last name <input class='r' type="text" name="last_name"></p>
-        <p>Email <input  class='r' type="email" name="email"></p>
-        <p>Backup Email <input  class='r' type="email" name="backup-email"></p>
-        <p>Password <input class='r'type="password" name="password"></p>
-        <p>Confirm pw<input class='r' type="password" name="confirm_password"></p>
-        <button id='rb'type="submit" class="btn btn-light">Register</button>
-    </form>
-    </div>
-    <div class='div2'>
-    <p class='top'>Login</p>
-    <form action="/login" method="POST">
-        {% csrf_token %}
-        <p>Email <input class='l' type="email" name="email"></p>
-        <p>Password <input class='l'type="password" name="password"></p>
-        <button id='lb'type="submit" class="btn btn-light">Login</button>
-    </form>
-    </div>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  </body>
-    
+    <head>
+        {% load static %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!------ Include the above in your HEAD tag ---------->
+        <style>
+        .register{
+            background: -webkit-linear-gradient(left, #3931af, #00c6ff);
+            margin-top: 3%;
+            padding: 3%;
+        }
+        .register-left{
+            text-align: center;
+            color: #fff;
+            margin-top: 4%;
+        }
+        .register-left input{
+            border: none;
+            border-radius: 1.5rem;
+            padding: 2%;
+            width: 60%;
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #383d41;
+            margin-bottom: 3%;
+            cursor: pointer;
+        }
+        .register-right{
+            background: #f8f9fa;
+            border-top-left-radius: 10% 50%;
+            border-bottom-left-radius: 10% 50%;
+        }
+        .register-left img{
+            margin-top: 15%;
+            margin-bottom: 5%;
+            width: 25%;
+            -webkit-animation: mover 2s infinite  alternate;
+            animation: mover 1s infinite  alternate;
+        }
+        @-webkit-keyframes mover {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+        @keyframes mover {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+        .register-left p{
+            font-weight: lighter;
+            padding: 12%;
+            margin-top: -9%;
+        }
+        .register .register-form{
+            padding: 10%;
+            margin-top: 10%;
+        }
+        .btnRegister{
+            float: right;
+            margin-top: 10%;
+            border: none;
+            border-radius: 1.5rem;
+            padding: 2%;
+            background: #0062cc;
+            color: #fff;
+            font-weight: 600;
+            width: 50%;
+            cursor: pointer;
+        }
+        .register .nav-tabs{
+            margin-top: 3%;
+            border: none;
+            background: #0062cc;
+            border-radius: 1.5rem;
+            width: 28%;
+            float: right;
+        }
+        .register .nav-tabs .nav-link{
+            padding: 2%;
+            height: 34px;
+            font-weight: 600;
+            color: #fff;
+            border-top-right-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+        }
+        .register .nav-tabs .nav-link:hover{
+            border: none;
+        }
+        .register .nav-tabs .nav-link.active{
+            width: 100px;
+            color: #0062cc;
+            border: 2px solid #0062cc;
+            border-top-left-radius: 1.5rem;
+            border-bottom-left-radius: 1.5rem;
+        }
+        .register-heading{
+            text-align: center;
+            margin-top: 8%;
+            margin-bottom: -15%;
+            color: #495057;
+        }
+        </style>
+    </head>
+    <body>
+         {% if messages %}
+                <ul class="messages" style="text-align: center; color: red; font-size: xx-large;">
+                    {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        <div class="container register">
+            <div class="row">
+                <div class="col-md-3 register-left">
+                    <img src="https://image.ibb.co/n7oTvU/logo_white.png" alt=""/>
+                    <h3>Dojo Mail</h3>
+                    <p>The fast and easy way to send private messages!</p>
+                    <form class="row register-form" action="/login" method="POST">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <div class="form-group" style="width:320px;">
+                                <input type="email" class="form-control" placeholder="Your Email *" value="" name="email"/>
+                            </div>
+                            <div class="form-group" style="width:320px;">
+                                <input type="password" class="form-control" placeholder="Password *" value="" name="password"/>
+                            </div>
+                        </div>
+                        <input type="submit" name="" value="Login"/><br/>
+                    </form>  
+                </div>
+                <div class="col-md-9 register-right">
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <h3 class="register-heading">Create an Account</h3>
+                            <form action="/users" class="row register-form" method="POST">
+                                {% csrf_token %}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="First Name *" value="" name="first_name"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="Last Name *" value="" name="last_name"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="email" class="form-control" placeholder="Your Email *" value="" name="email"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <input type="password" class="form-control" placeholder="Password *" value="" name="password"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" class="form-control"  placeholder="Confirm Password *" value="" name="confirm_password"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" name="timezone">
+                                            <option class="hidden"  selected disabled>Please select your Timezone</option>
+                                            <option>Alaska Daylight Time - Anchorage (GMT-8)</option>
+                                            <option>Central Daylight Time - Chicago (GMT-5)</option>
+                                            <option>Eastern Daylight Time - Washington, DC</option>
+                                            <option>Hawaii-Aleutian Standard Time - Honolulu (GMT-10)</option>
+                                            <option>Mountain Daylight Time - Denver (GMT-6)</option>
+                                            <option>Mountain Standard Time - Phoenix (GMT-7)</option>
+                                            <option>Pacific Daylight Time Los Angeles (GMT-7)</option>
+                                        </select>
+                                    </div>
+                                    <input type="submit" class="btnRegister"  value="Create"/>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

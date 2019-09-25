@@ -9,6 +9,9 @@ import re	# the regex module
 # create a regular expression object that we'll use later   
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$') 
 
+def test(request):
+	return render(request, 'first_app/login_reg.html')
+
 def register_form(request):
 	return render(request, 'first_app/index.html')
 
@@ -29,8 +32,6 @@ def register_user(request):
 		errors['email'] = "Email is taken"
 	if not EMAIL_REGEX.match(request.POST['email']):
 		errors['email'] = "Email is invalid format."
-	if not EMAIL_REGEX.match(request.POST['backup-email']):
-		errors['backup-email'] = "Backup Email is invalid format."
 	if len(request.POST['password'])< 8:
 		errors['password'] = "Password must be at least 8 characters long"
 	if request.POST['password'] != request.POST['confirm_password']:
@@ -46,7 +47,7 @@ def register_user(request):
 		# 2019-09: decoded
 		password_hash = hash1.decode('utf8')
 		# 3. Run the query to add the user to the db
-		new_user = User.objects.create(first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], backup_email=request.POST['backup-email'], password=password_hash)
+		new_user = User.objects.create(first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], password=password_hash, timezone=request.POST['timezone'])
 		request.session['user_email'] = request.POST['email']
 		request.session['user_id'] = User.objects.last().id
 		return redirect('/compose')
@@ -284,8 +285,18 @@ def delete(request, value):
 
 def fwd(request):
 	user = user = User.objects.get(id=request.session['user_id'])
+	unread_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(read=False).filter(spam=False).count()
+	inbox_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=False).count()
+	spam_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(spam=True).count()
+	sent_count = Email.objects.all().filter(from_email=request.session['user_email']).count()
+	deleted_count = Email.objects.all().filter(to_email=request.session['user_email']).filter(deleted=True).count()
 	context = {
 		'user': user,
+		'unread_count': unread_count,
+		'inbox_count': inbox_count,
+		'spam_count': spam_count,
+		'sent_count' : sent_count,
+		'deleted_count' : deleted_count
 		}
 	return render(request,'first_app/fwd.html', context)
 
